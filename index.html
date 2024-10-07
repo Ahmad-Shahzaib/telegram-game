@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <title>Tower Building</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.png">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 
     <!-- Styles -->
     <style>
@@ -466,37 +468,32 @@
 
       if (f >= 3) {
         overShowOver(); // Trigger game over UI
-        console.log('Game Over. Final Score:', score); // Log the final score to the console
+  console.log('Game Over. Final Score:', score); // Log the final score to the console
 
-        // Calculate total_score based on multiplier
-        const total_score = score * multiplier;
+  // Calculate total_score based on multiplier
+  const total_score = score * multiplier;
 
-        // Clean the userID before using it in the API request
-        const cleanUserID = getCleanUserID(userID);
+  // Cleaned userID from earlier (already stored in userID variable)
+  // Use the cleaned initData from earlier (already stored in initData variable)
+  try {
+    const response = await fetch('https://api-dapp.gotem.io/increase_totalgot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Telegram-Init-Data': initData, // Use cleaned initData from earlier
+      },
+      body: JSON.stringify({ UserId: userID, Amount: total_score }), // Use cleaned userID
+    });
 
-        // Make API call to increase total score when the game is over
-        const initData = window.Telegram.WebApp.initData || ''; // Get initData from Telegram WebApp
+    if (!response.ok) {
+      throw new Error('Failed to update total score');
+    }
 
-        try {
-          const response = await fetch('https://api-dapp.gotem.io/increase_totalgot', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Telegram-Init-Data': initData, // Add initData to headers
-
-            },
-            body: JSON.stringify({ UserId: cleanUserID, Amount: total_score }),
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to update total score');
-          }
-
-          console.log('Total score updated successfully');
-        } catch (error) {
-          console.error('Error updating total score:', error);
-        }
-      }
+    console.log('Total score updated successfully');
+  } catch (error) {
+    console.error('Error updating total score:', error);
+  }
+}
     }
   };
 
@@ -572,32 +569,43 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
   let userID;
+  let initData;
   let multiplier = 1; // Default multiplier value
   score = 0; // Default score value
 
   // This is your existing window.onload function for fetching gamer data
   window.onload = async function() {
-    // Extract the user ID from the URL query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    userID = urlParams.get('userID');
+    // Extract the entire URL query string
+    const queryString = window.location.search.substring(1); // Remove the initial '?' from the query string
+
+    // Split the query string into individual parameters
+    const params = queryString.split("&");
+
+    // Loop through the parameters to find userID and initdata
+    params.forEach(param => {
+      const [key, value] = param.split("=");
+      if (key === "userID") {
+        userID = value; // Get userID directly
+      } else if (key === "initdata") {
+        // Capture initdata and everything after it exactly as it is in the query string
+        initData = queryString.substring(queryString.indexOf("initdata=") + 9);
+      }
+    });
+
+    // Alert the cleaned values (in their original form)
+    alert('UserID: ' + userID);
+    alert('InitData: ' + initData);
 
     if (userID) {
-      // alert('User ID: ' + userID); // Alert the extracted user ID
-
-      // Clean up userID to ensure it's properly formatted before sending it to the API
-      const cleanUserID = userID.split('?')[0]; // Remove any characters after a '?'
-      const initData = window.Telegram.WebApp.initData || ''; // Get initData from Telegram WebApp
-
-      // Make API call to get gamer information
+      // Use the userID and initData for further API requests
       try {
         const response = await fetch('https://api-dapp.gotem.io/gamer', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Telegram-Init-Data': initData, // Add initData to headers
-
+            'X-Telegram-Init-Data': initData, // Add initData as it is in the headers
           },
-          body: JSON.stringify({ GamerId: cleanUserID }), // Use cleaned userID
+          body: JSON.stringify({ GamerId: userID }), // Use userID
         });
 
         if (!response.ok) {
@@ -618,14 +626,13 @@
         console.error('Error fetching gamer data:', error);
       }
     } else {
-      // alert('No user ID provided'); // Alert "no user ID" if no userID is found in the URL
+      console.error('No UserID provided in the URL'); // Log if no userID is found
     }
   };
-</script>
-<script>
-  // Function to clean userID by removing unwanted query parameters
-  function getCleanUserID(userID) {
-    return userID && userID.includes('?') ? userID.split('?')[0] : userID;
+
+  // Function to clean a value by removing unwanted query parameters
+  function getCleanValue(value) {
+    return value && value.includes('?') ? value.split('?')[0] : value;
   }
 </script>
 
