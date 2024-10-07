@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Tower Building</title>
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.png">
+
+    <!-- Styles -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      img {
+        width: 100%;
+      }
+      html {
+        background: #fff;
+        height: 100%;
+      }
+      body {
+        font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+        margin: 0 auto;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+        background: #f95240 url(assets/main-bg.png);
+      }
+
+      /* Responsive font sizes based on height */
+      @media screen and (min-height: 560px) {
+        html {
+          font-size: 100px;
+        }
+      }
+      @media screen and (min-height: 640px) {
+        html {
+          font-size: 112.5px;
+        }
+      }
+      @media screen and (min-height: 720px) {
+        html {
+          font-size: 125px;
+        }
+      }
+      @media screen and (min-height: 800px) {
+        html {
+          font-size: 137.5px;
+        }
+      }
+      @media screen and (min-height: 880px) {
+        html {
+          font-size: 150px;
+        }
+      }
+      @media screen and (min-height: 960px) {
+        html {
+          font-size: 162.5px;
+        }
+      }
+      @media screen and (min-height: 1040px) {
+        html {
+          font-size: 180px;
+        }
+      }
+      @media screen and (min-height: 1200px) {
+        html {
+          font-size: 200px;
+        }
+      }
+
+      html {
+        font-size: 17.6vh;
+      }
+
+      #canvas {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+      }
+
+      a {
+        text-decoration: none;
+      }
+      li, ol, ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      .clear {
+        clear: both;
+      }
+
+      /* Loading screen styles */
+      .loading {
+        background-color: #f05a50;
+        height: 100%;
+        width: 100%;
+      }
+      .loading .main {
+        width: 60%;
+        margin: 0 auto;
+        color: #fff;
+      }
+      .loading .main img {
+        width: 60%;
+        margin: 1rem auto 0;
+      }
+      .loading .main .title {
+        font-size: 0.3rem;
+      }
+      .loading .main .text {
+        font-size: 0.15rem;
+      }
+      .loading .main .bar {
+        height: 0.12rem;
+        width: 100%;
+        border: 3px solid #fff;
+        border-radius: 0.6rem;
+        margin: 0.1rem 0;
+      }
+      .loading .main .bar .sub {
+        height: 0.1rem;
+        width: 98%;
+        margin: 0.008rem auto 0;
+      }
+      .loading .main .bar .percent {
+        height: 100%;
+        width: 0;
+        background-color: #fff;
+        border-radius: 0.6rem;
+      }
+      .loading .logo {
+        position: absolute;
+        bottom: 0.3rem;
+        left: 0;
+        right: 0;
+      }
+      .loading .logo img {
+        width: 1rem;
+      }
+
+      /* Content container */
+      .content {
+        height: 100vh;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      /* Landing page styles */
+      .landing .title {
+        width: 60%;
+      }
+      .landing .logo {
+        width: 30%;
+        position: absolute;
+        right: 0.2rem;
+        top: 0.2rem;
+      }
+      .landing .action-2 {
+        position: absolute;
+        bottom: 0.2rem;
+        width: 100%;
+      }
+      .landing .start {
+        width: 65%;
+      }
+
+      /* Animation styles */
+      .slideTop {
+        -webkit-animation: st 1s ease-in-out;
+        animation: st 1s ease-in-out;
+      }
+      @-webkit-keyframes st {
+        0% {
+          transform: translateZ(0);
+        }
+        100% {
+          transform: translate3d(0, -100%, 0);
+        }
+      }
+      @keyframes st {
+        0% {
+          transform: translateZ(0);
+        }
+        100% {
+          transform: translate3d(0, -100%, 0);
+        }
+      }
+
+      .slideBottom {
+        -webkit-animation: sb 1s ease-in-out;
+        animation: sb 1s ease-in-out;
+      }
+      @-webkit-keyframes sb {
+        0% {
+          transform: translateZ(0);
+        }
+        100% {
+          transform: translate3d(0, 200%, 0);
+        }
+      }
+      @keyframes sb {
+        0% {
+          transform: translateZ(0);
+        }
+        100% {
+          transform: translate3d(0, 200%, 0);
+        }
+      }
+
+      .swing {
+        -webkit-animation: sw 2s ease-in-out alternate infinite;
+        animation: sw 2s ease-in-out alternate infinite;
+      }
+      @-webkit-keyframes sw {
+        0% {
+          transform: rotate(5deg);
+          transform-origin: top center;
+        }
+        100% {
+          transform: rotate(-5deg);
+          transform-origin: top center;
+        }
+      }
+      @keyframes sw {
+        0% {
+          transform: rotate(5deg);
+          transform-origin: top center;
+        }
+        100% {
+          transform: rotate(-5deg);
+          transform-origin: top center;
+        }
+      }
+
+      /* Modal styles */
+      .modal .mask {
+        background-color: #000;
+        opacity: 0.6;
+        position: fixed;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+      }
+      .modal .modal-content {
+        position: fixed;
+        height: 100%;
+        width: 90%;
+        margin-top: 0.3rem;
+        top: 0;
+      }
+      .modal .main {
+        width: 85%;
+        margin: 0 auto;
+      }
+      .modal .container {
+        position: relative;
+      }
+      .modal .bg {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      .modal .modal-main {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin-top: -0.4rem;
+      }
+      .modal .over-img {
+        width: 80%;
+        margin: 0.8rem auto 0;
+      }
+      .modal .over-score {
+        margin-top: -0.2rem;
+        font-size: 0.5rem;
+        color: #ff735c;
+        text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;
+      }
+      .modal .tip {
+        font-size: 0.16rem;
+        color: #9b724e;
+      }
+      .modal .over-button-b {
+        width: 70%;
+        margin: 0.1rem auto 0;
+      }
+
+      /* WeChat Share screen */
+      .wxShare {
+        background: #000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 11;
+        opacity: 0.9;
+      }
+      .wxShare img {
+        width: 50%;
+        float: right;
+        margin: 10px 10px 0 0;
+      }
+
+      @font-face {
+        font-family: wenxue;
+        src: url(assets/wenxue.eot);
+        src: url(assets/wenxue.eot), url(assets/wenxue.woff), url(assets/wenxue.ttf), url(assets/wenxue.svg);
+      }
+      .font-wenxue {
+        font-family: wenxue;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Game Canvas -->
+    <canvas id="canvas" class="hide"></canvas>
+
+    <!-- Content Container -->
+    <div class="content">
+      <!-- Loading Screen -->
+      <div class="loading">
+        <div class="main">
+          <img src="./assets/main-loading.gif">
+          <div class="progress">
+            <div class="title font-wenxue">0%</div>
+            <div class="bar">
+              <div class="sub">
+                <div class="percent"></div>
+              </div>
+            </div>
+            <div class="text">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Landing Screen -->
+      <div class="landing hide">
+        <div class="action-1">
+          <img src="./assets/main-index-title.png" class="title swing">
+        </div>
+        <div class="action-2">
+          <img id="start" src="./assets/main-index-start.png" class="start">
+        </div>
+      </div>
+
+      <!-- Game Over Modal -->
+      <div id="modal" class="modal hide">
+        <div class="mask"></div>
+        <div class="js-modal-content modal-content">
+          <div class="main">
+            <div class="container">
+              <img src="./assets/main-modal-bg.png" class="bg">
+              <div class="modal-main">
+                <div id="over-modal" class="hide js-modal-card">
+                  <img src="./assets/main-modal-over.png" class="over-img">
+                  <div id="score" class="over-score font-wenxue"></div>
+                  <div id="over-zero" class="hide">
+                    <div class="tip">
+                      <p>Try Again!</p>
+                      <img src="./assets/main-modal-again-b.png" class="over-button-b js-reload">
+                      <img src="./assets/main-modal-invite-b.png" class="over-button-b js-invite">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WeChat Share Screen -->
+      <div class="wxShare hide">
+        <img src="./assets/main-share-icon.png">
+      </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="./dist/main.js"></script>
+    <script src="./assets/zepto-1.1.6.min.js"></script>
+
+    <script>
+      // Variables for game state
+      var domReady, loadFinish, canvasReady, loadError, gameStart, game, score, successCount;
+
+      // Initialize window height and width
+      var gameWidth = window.innerWidth;
+      var gameHeight = window.innerHeight;
+      var ratio = 1.5;
+      if (gameHeight / gameWidth < ratio) {
+        gameWidth = Math.ceil(gameHeight / ratio);
+      }
+      $('.content').css({ "height": gameHeight + "px", "width": gameWidth + "px" });
+      $('.js-modal-content').css({ "width": gameWidth + "px" });
+
+      // Loading animation
+      function hideLoading() {
+        if (domReady && canvasReady) {
+          $('#canvas').show();
+          loadFinish = true;
+          setTimeout(function () {
+            $('.loading').hide();
+            $('.landing').show();
+          }, 1000);
+        }
+      }
+
+      function updateLoading(status) {
+        var success = status.success;
+        var total = status.total;
+        var failed = status.failed;
+        if (failed > 0 && !loadError) {
+          loadError = true;
+          // alert('Network error... Please try again.');
+          return;
+        }
+        var percent = parseInt((success / total) * 100);
+        if (percent === 100 && !canvasReady) {
+          canvasReady = true;
+          hideLoading();
+        }
+        percent = percent > 98 ? 98 : percent;
+        percent = percent + '%';
+        $('.loading .title').text(percent);
+        $('.loading .percent').css({
+          'width': percent
+        });
+      }
+
+      function overShowOver() {
+        $('#modal').show();
+        $('#over-modal').show();
+        $('#over-zero').show();
+      }
+
+  // Game customization options
+  const option = {
+    width: gameWidth,
+    height: gameHeight,
+    canvasId: 'canvas',
+    soundOn: true,
+    setGameScore: function (s) {
+      score = s; // Update the game score
+      console.log(score); // Log current score
+    },
+    setGameSuccess: function (s) {
+      successCount = s; // Update the success count
+    },
+    setGameFailed: async function (f) {
+      $('#score').text(score); // Update the score on the UI
+
+      if (f >= 3) {
+        overShowOver(); // Trigger game over UI
+        console.log('Game Over. Final Score:', score); // Log the final score to the console
+
+        // Calculate total_score based on multiplier
+        const total_score = score * multiplier;
+
+        // Clean the userID before using it in the API request
+        const cleanUserID = getCleanUserID(userID);
+
+        // Make API call to increase total score when the game is over
+        try {
+          const response = await fetch('https://api-dapp.gotem.io/increase_totalgot', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ UserId: cleanUserID, Amount: total_score }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update total score');
+          }
+
+          console.log('Total score updated successfully');
+        } catch (error) {
+          console.error('Error updating total score:', error);
+        }
+      }
+    }
+  };
+
+      // Game initialization
+      function gameReady() {
+        game = TowerGame(option);
+        game.load(function () {
+          game.init();
+          setTimeout(function () {
+            game.playBgm();
+          });
+        }, updateLoading);
+      }
+
+      // Detect if running in WeChat
+      var isWechat = navigator.userAgent.toLowerCase().indexOf("micromessenger") !== -1;
+      if (isWechat) {
+        document.addEventListener("WeixinJSBridgeReady", gameReady, false);
+      } else {
+        gameReady();
+      }
+
+      function indexHide() {
+        $('.landing .action-1').addClass('slideTop');
+        $('.landing .action-2').addClass('slideBottom');
+        setTimeout(function () {
+          $('.landing').hide();
+        }, 950);
+      }
+
+      // Click events
+      $('#start').on('click', function () {
+        if (gameStart) return;
+        gameStart = true;
+        setTimeout(function () {
+          game.playBgm();
+        });
+        indexHide();
+        setTimeout(game.start, 400);
+      });
+
+      $('.js-reload').on('click', function () {
+        window.location.href = window.location.href + '?s=' + (+new Date());
+      });
+
+      $('.js-invite').on('click', function () {
+        $('.wxShare').show();
+      });
+
+      $('.wxShare').on('click', function () {
+        $('.wxShare').hide();
+      });
+
+      // Listener for DOM ready
+      window.addEventListener('load', function () {
+        domReady = true;
+        hideLoading();
+      }, false);
+    </script>
+
+<!-- Google Tag Manager -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YCWZ8ZDCH2"></script>
+<script>
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  window.dataLayer = window.dataLayer || [];
+  gtag("js", new Date());
+  gtag("config", "G-YCWZ8ZDCH2");
+</script>
+
+<!-- Telegram Web App -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  let userID;
+  let multiplier = 1; // Default multiplier value
+  score = 0; // Default score value
+
+  // This is your existing window.onload function for fetching gamer data
+  window.onload = async function() {
+    // Extract the user ID from the URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    userID = urlParams.get('userID');
+
+    if (userID) {
+      // alert('User ID: ' + userID); // Alert the extracted user ID
+
+      // Clean up userID to ensure it's properly formatted before sending it to the API
+      const cleanUserID = userID.split('?')[0]; // Remove any characters after a '?'
+
+      // Make API call to get gamer information
+      try {
+        const response = await fetch('https://api-dapp.gotem.io/gamer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ GamerId: cleanUserID }), // Use cleaned userID
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch gamer data');
+        }
+
+        const data = await response.json();
+        const hookspeed = data.data.hookspeed || 1; // Default to 1 if hookspeed is not provided
+        multiplier = data.data.multiplier || 1; // Get multiplier from API response, default to 1
+
+        // Update global variables for v1, v2, v3
+        window.gameSettings = {
+          v1: 30 / hookspeed,
+          v2: 50 / hookspeed,
+          v3: 60 / hookspeed,
+        };
+      } catch (error) {
+        console.error('Error fetching gamer data:', error);
+      }
+    } else {
+      // alert('No user ID provided'); // Alert "no user ID" if no userID is found in the URL
+    }
+  };
+</script>
+<script>
+  // Function to clean userID by removing unwanted query parameters
+  function getCleanUserID(userID) {
+    return userID && userID.includes('?') ? userID.split('?')[0] : userID;
+  }
+</script>
+
+
+
+</body>
+</html>
